@@ -1,0 +1,46 @@
+@using Sitecore.ExperienceForms.Mvc.Html
+@model CascadeDropDownList.CustomModels.CascadeDropDownListViewModel
+
+<div class="universalcascadingselectlist">
+    <label for="@Html.IdFor(m => Model.Value)" class="@Model.LabelCssClass">@Html.DisplayTextFor(t => Model.Title)</label>
+    <select id="@Html.IdFor(m => Model.Value)" name="@Html.NameFor(m => Model.Value)" class="@Model.CssClass universalcascadingselectlist-ddn" data-sc-tracking="@Model.IsTrackingEnabled" data-sc-text="@Model.SecondDropDownListTextField" data-sc-value="@Model.SecondDropDownListValueField" data-sc-field-name="@Model.Name" @Html.GenerateUnobtrusiveValidationAttributes(m => m.Value)>
+        @if (Model.ShowEmptyItem)
+        {
+            <option label=" "></option>
+        }@foreach (var item in Model.Items)
+        {
+            <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+        }
+    </select>
+    @Html.ValidationMessageFor(m => Model.Value)
+
+    <div class="child-ddl">
+        <label for="@Html.IdFor(m => Model.SecondDropDownListFieldName)" class="@Model.LabelCssClass">@Html.DisplayTextFor(t => Model.SecondDropDownListLabel)</label>
+        <select id="@Html.IdFor(m => Model.SecondDropDownListFieldName)" name="@Html.NameFor(m => Model.SecondDropDownListFieldName)" class="universalcascadingselectlist-child-ddn" data-sc-tracking="@Model.IsTrackingEnabled" data-sc-field-name="@Model.SecondDropDownListFieldName"></select>
+    </div>
+</div>
+
+<script>
+
+    jQuery(document).ready(function ($) {
+        jQuery(".universalcascadingselectlist-ddn").change(function () {
+            var selectedItemValue = jQuery(this).val();
+            var textField = jQuery(this).attr("data-sc-text");
+            var valueField = jQuery(this).attr("data-sc-value");
+
+            jQuery.get("/api/sitecore/CascadeDropdownList/SelectItems",
+                { selectedItemValue: selectedItemValue, textField: textField, valueField: valueField }, function (data, status) {
+
+                    var childSelectList = jQuery(".universalcascadingselectlist-child-ddn");
+
+                    if (status === "success") {
+                        childSelectList.empty();
+                        jQuery.each(data, function (key, entry) {
+                            childSelectList.append(new Option(entry.Text, entry.Value));
+                        });
+                    }
+                });
+        });
+    });
+
+</script>
